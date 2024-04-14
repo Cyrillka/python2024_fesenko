@@ -122,8 +122,6 @@ def ip_calc(ipmask: str):
 
 
 # TASK 4.7
-from textwrap import dedent
-
 output = """
 Local Interface         Exptime(s) Neighbor Interface            Neighbor Device
 -------------------------------------------------------------------------------------
