@@ -1,19 +1,25 @@
 # TASK 1.1
-config = """
-#
-bridge-domain 555
- vlan 555 access-port interface 10GE1/0/1 to 10GE1/0/48
- vxlan vni 10555
- #
- evpn
-  route-distinguisher 192.168.43.34:10555
-  vpn-target 64512:10555 export-extcommunity
-  vpn-target 64512:10555 import-extcommunity
- arp broadcast-suppress enable
-#"""
+from textwrap import dedent
+
+config = dedent(
+    """ 
+    #
+    bridge-domain 555
+     vlan 555 access-port interface 10GE1/0/1 to 10GE1/0/48
+     vxlan vni 10555
+     #
+    evpn
+      route-distinguisher 192.168.43.34:10555
+      vpn-target 64512:10555 export-extcommunity 
+      vpn-target 64512:10555 import-extcommunity
+     arp broadcast-suppress enable
+    #"""
+)
+print(config)
 # TASK 2.1
 if True:
-    config = """
+    config = dedent(
+        """
 #
 bridge-domain 555
  vlan 555 access-port interface 10GE1/0/1 to 10GE1/0/48
@@ -25,18 +31,23 @@ bridge-domain 555
   vpn-target 64512:10555 import-extcommunity
  arp broadcast-suppress enable
 #"""
+    )
 # TASK 2
 bd_id = 555
 
 bd_id_str1 = str(bd_id)
 bd_id_str2 = f"{bd_id}"
-bd_id_str3 = "% s" % bd_id
+bd_id_str3 = "{}".format(bd_id)  # Поправил
 
 # TASK 3.1
 output = b"\r\nHuawei Versatile Routing Platform Software\r\nVRP (R) software, Version 8.220 (CE6857EI V200R022C00SPC500)\r\nCopyright (C) 2012-2022 Huawei Technologies Co., Ltd.\r\nHUAWEI CE6857-48S6CQ-EI uptime is 248 days, 3 hours, 14 minutes\r\n"
 output_string = output.decode("utf-8")
+
 # TASK 3.2
-output_string_1 = output_string.strip("\r")
+from pprint import pprint
+
+output_string_1 = output_string.replace("\r", "")  # Так наверное правильно.
+# pprint(output_string_1)
 # TASK 3.3
 output_string_2 = output_string_1.lstrip()
 # print(output_string_1.lstrip())
@@ -54,11 +65,39 @@ bridge-domain {bd_id}
  vxlan vni 1{bd_id.zfill(4)}
  #
  evpn
-  route-distinguisher 192.168.43.34:10555
+  route-distinguisher {rid}:1{bd_id.zfill(4)}
   vpn-target {bgp_as}:1{bd_id.zfill(4)} export-extcommunity
   vpn-target {bgp_as}:1{bd_id.zfill(4)} import-extcommunity
  arp broadcast-suppress enable
 """
+# Через формат, но показалось сложнее писать такую подстановку:
+template_format = """
+bridge-domain {}
+ vlan {} access-port interface {} to {}
+ vxlan vni {}
+ #
+ evpn
+  route-distinguisher {}:{}
+  vpn-target {}:{} export-extcommunity
+  vpn-target {}:{} import-extcommunity
+ arp broadcast-suppress enable
+"""
+rd_rt_vni = "1" + bd_id.zfill(4)
+template_2 = template_format.format(
+    bd_id,
+    bd_id,
+    intf_start,
+    intf_end,
+    rd_rt_vni,
+    rid,
+    rd_rt_vni,
+    bgp_as,
+    rd_rt_vni,
+    bgp_as,
+    rd_rt_vni,
+)
+if template == template_2:
+    print("__EQUAL__")
 # TASK 4.2
 print(f"{int(str(42)):b}")
 print(f"{int(str(32)):b}")
@@ -72,13 +111,13 @@ print(f"{int(str(255)):08b}")
 # TASK 4.4
 ip = "10.23.43.234"
 result = "".join([f"{int(octet):08b}" for octet in ip.split(".")])
-print(result)
+
 
 # TASK 4.5
 ip = "77.88.55.242"
 octets = ip.split(".")
 result = f"{octets[3]}.{octets[2]}.{octets[1]}.{octets[0]}.in-addr.arpa"
-print(result)
+
 
 # TASK 4.6
 ip = "192.168.43.54 / 255.255.254.0"
@@ -114,11 +153,13 @@ def ip_calc(ipmask: str):
     # Broadcast
     broadcast_ip_bin = ip_bin[0:(mask_length)] + (32 - mask_length) * "1"
     broadcast = bin_to_dec(broadcast_ip_bin)
-    print(network)
-    print(wildcard)
-    print(broadcast)
-    print(min_host_ip)
-    print(max_host_ip)
+
+
+# print(network)
+# print(wildcard)
+# print(broadcast)
+# print(min_host_ip)
+# print(max_host_ip)
 
 
 # TASK 4.7
@@ -128,8 +169,23 @@ Local Interface         Exptime(s) Neighbor Interface            Neighbor Device
 100GE1/0/1                    107  100GE1/0/1                    spine1.pod1.stg
 10GE1/0/1                     105  10GE1/0/1                     test-server.stg
 """.strip()
-output = output.replace("-", "")
-print("\n".join(filter(None, output.split("\n"))))
+output_list = output.split("\n")
+corrected_list = []
+
+"""
+Не совсем понял про поиск позиции
+Левая координата:
+str_start = output.find("--")
+Правая:
+str_end = output.rfind("--")
+Получили 2 координаты и их теперь как-то вырезать все [str_start:str_end]  ?
+"""
+for i in output_list:
+    if i.startswith("---") and i.endswith("---"):
+        continue
+    else:
+        corrected_list.append(i)
+print("\n".join(corrected_list))
 
 # TASK 4.8
 if_name1 = "Eth0/1"
@@ -139,7 +195,3 @@ if_name3 = "Ten4/3"
 if_name1 = if_name1.replace("Eth", "Ethernet")
 if_name2 = if_name2.replace("GE", "GigabitEthernet")
 if_name3 = if_name3.replace("Ten", "TenGigabitEthernet")
-
-print(if_name1)
-print(if_name2)
-print(if_name3)
