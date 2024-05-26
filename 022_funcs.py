@@ -81,7 +81,7 @@ def timer():
 
 t = timer()
 t()
-
+# Task4
 config = """
 spanning-tree mode rapid-pvst
 spanning-tree logging
@@ -125,7 +125,6 @@ interface GigabitEthernet0/2
  switchport mode trunk
  mls qos trust cos
  ip dhcp snooping trust
-!
 interface GigabitEthernet0/3
   description mgmt3.core - FastEthernet0/32
   switchport mode trunk
@@ -147,12 +146,9 @@ line vty 0 4
 def parse_config(config: str):
     result = {}
     sub_config = []
-    for line in config.strip().split("\n"):
-        if line.startswith(
-            "!"
-        ):  # если строка ! значит новый блок конфига, сбрасываем саб данные
+    for line in config.strip().split("\n"):  #Убрал привязку к !
+        if not line[0].isspace():  # Записываем global команду в ключи
             sub_config = []
-        elif not line[0].isspace():  # Записываем global команду в ключи
             result[line] = sub_config
         elif line[0].isspace():  # заполняем список присвоенный ключу
             sub_config.append(line)
@@ -161,3 +157,65 @@ def parse_config(config: str):
 
 parsed = parse_config(config)
 print(parsed)
+
+#Task5
+seq = ["rt1", "RT2", "SW1", "sw2"]
+filter_list = list(filter(lambda x: str(x).lower().startswith("rt") , seq))
+print(filter_list)
+"""
+Александр, а вот тут я не понял, если лямбда ф-ю сделать rt1 такой - lambda x: str(x).lower().startswith("rt")
+то последний элемент пустой список, не понял почему.
+rt2
+sw1
+sw2
+[]
+"""
+
+#Task6
+devices = {
+    "rt3": {
+        "nb_id": 32,
+        "ip": "3.3.3.3",
+    },
+    "rt1": {
+        "nb_id": 908,
+        "ip": "1.1.1.1",
+    },
+    "sw2": {
+        "nb_id": 5233,
+        "ip": "2.2.2.2",
+    },
+}
+
+sort_dict = dict(sorted(devices.items(), key=lambda x: x[1].get("nb_id")))
+print(sort_dict)
+
+#Task7
+#Var1
+def foo(**kwargs):
+    for arg_name, arg_value in kwargs.items():
+        print(f"{arg_name} = {arg_value}")
+foo(a="33", b="44", c="55")
+#Var2
+def foo(*, var1, var2=None, var3=None):
+    print(f'{var1 = }')
+    if var2: print(f'{var2 = }')
+    if var3: print(f'{var3 = }')
+foo(var1="777", var2="888")
+
+
+import time
+#Task8
+from datetime import datetime
+
+
+def my_log(msg, *, dt=datetime.now()):
+    dt=datetime.now()
+    print(f"[{dt:%Y-%m-%d %H:%M:%S}]: {msg}")
+
+my_log("test")
+time.sleep(2)
+my_log("test")
+time.sleep(2)
+my_log("test")
+
