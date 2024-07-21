@@ -1,0 +1,16 @@
+ ip address {{ interface_data.ip }} {{ interface_data.mask }}
+ no ip redirects
+ no ip unreachables
+ no ip proxy-arp
+{%- if interface_data.mtu %}
+ mtu {{ interface_data.mtu }}
+{%- endif %}
+ load-interval {{ interface_data.load_interval | default("30") }}
+{%- if interface_data.bfd == True %}
+ bfd interval 50 min_rx 50 multiplier 3
+ no bfd echo
+{%- endif %}
+ no mop enabled
+ carrier-delay msec 0
+ no negotiation auto
+ no shutdown

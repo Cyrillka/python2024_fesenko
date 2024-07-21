@@ -1,0 +1,37 @@
+{% extends "task_3_base.j2" %}
+{%- block ospf -%}
+{{ super() }}
+ bfd all-interfaces
+{%- for interface_name, interface_data in interfaces.items() %}
+{%- if "area" in interface_data.keys() %}
+ network {{ interface_data.ip | ip_network(interface_data.mask) }} {{ interface_data.mask |
+ip_wildcard(interface_data.ip) }} area {{ interface_data.area }}
+{%- endif %}
+{%- endfor %}
+{%- endblock ospf -%}
+!
+{# Interfaces #}
+{%- block interfaces -%}
+{%- for interface_name, interface_data in interfaces.items() -%}
+interface {{ interface_name }}
+{%- if interface_data.description %}
+description {{ interface_data.description }}
+{%- endif -%}
+{# Check admin status: #}
+{%- if interface_data.shutdown == True or interface_data.shutdown == None %}
+{% include "./task_3_shut_int.j2" %}
+{%- else %}
+{%- if interface_data.ip %}
+{% include "./task_3_no_shut_int.j2" %}
+{%- if interface_data.type == "internal" %}
+{% include "./task_3_internal.j2"%}
+{%- elif interface_data.type == "external" %}
+{%- include "./task_3_external.j2"%}
+{%- else %}
+{% include "./task_3_shut_int.j2" %}
+{%- endif -%}
+{%- endif -%}
+{%- endif %}
+!
+{% endfor -%}
+{% endblock interfaces%}

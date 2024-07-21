@@ -1,0 +1,51 @@
+{%- for interface_name, interface_data in interfaces.items() %}
+interface {{ interface_name }}
+{%- if interface_data.description %}
+ description {{ interface_data.description }}
+{%- endif -%}
+{%- if interface_data.shutdown == True or interface_data.shutdown == None %}
+ shutdown
+!
+{%- else %}
+{%- if interface_data.ip %}
+ ip address {{ interface_data.ip }} {{ interface_data.mask }}
+ no ip redirects
+ no ip unreachables
+ no ip proxy-arp
+{%- endif %}
+{%- if interface_data.mtu %}
+ mtu {{ interface_data.mtu }}
+{%- endif %}
+{%- if interface_data.type == "internal" %}
+ cdp enable
+{%- elif interface_data.type == "external" %}
+ mpls bgp forwarding
+{%- endif -%}
+{% if interface_data.type == "internal" and "area" in interface_data.keys() %}
+ ip ospf network point-to-point
+ ip ospf bfd strict-mode
+ mpls ip
+{%- endif %}
+ load-interval {{ interface_data.load_interval | default("30") }}
+{%- if interface_data.bfd == True %}
+ bfd interval 50 min_rx 50 multiplier 3
+ no bfd echo
+{%- endif %}
+ no mop enabled
+ carrier-delay msec 0
+ no negotiation auto
+ no shutdown
+!
+{%- endif -%}
+{% endfor -%}
+{# OSPF section #}
+{%- block ospf %}
+router ospf 1
+{%- for interface_name, interface_data in interfaces.items() %}
+{%- if "area" in interface_data.keys() %}
+  network {{ interface_data.ip | ip_network(interface_data.mask) }} {{ interface_data.mask |
+ip_wildcard(interface_data.ip) }} area {{ interface_data.area }}
+{% endif %}
+{%- endfor %}
+{%- endblock %}
+!

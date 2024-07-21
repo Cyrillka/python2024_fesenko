@@ -1,0 +1,6 @@
+ cdp enable
+{%- if "area" in interface_data.keys() %}
+ ip ospf network point-to-point
+ ip ospf bfd strict-mode
+ mpls ip
+{%- endif %}
